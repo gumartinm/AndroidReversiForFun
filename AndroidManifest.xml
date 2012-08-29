@@ -5,7 +5,9 @@
 
     <uses-sdk
         android:minSdkVersion="15"
-        android:targetSdkVersion="15" android:maxSdkVersion="16"/>
+        android:targetSdkVersion="15" 
+        android:maxSdkVersion="16"/>
+    <uses-configuration android:reqTouchScreen="undefined"/>
 
     <application
         android:icon="@drawable/ic_launcher"
@@ -13,7 +15,8 @@
         android:theme="@style/AppTheme" >
         <activity
             android:name=".ReversiActivity"
-            android:label="@string/title_activity_reversi" >
+            android:label="@string/title_activity_reversi" 
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
