@@ -20,16 +20,17 @@ public class ReversiView extends SurfaceView {
     private static final short TOP_MARGIN = 0;
     private static final short LEFT_MARGIN = 0;
 
-    private int squareWidth;
-    private int squareHeight;
-    private int canvasHeight;
-    private int canvasWidth;
-
     private final Square gameBoard[][] = new Square[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
+    private final Player IA = Player.NOPLAYER;
+
     //¿Funciona bien volatile con enum? Ver mi codigo de Singletons y enums.
     private volatile Player currentPlayer = Player.PLAYER1;
     private volatile boolean isEnableUserTouch;
 
+    private int squareWidth;
+    private int squareHeight;
+    private int canvasHeight;
+    private int canvasWidth;
     private List<Movement> listAllowedMovements;
 
 
@@ -49,16 +50,6 @@ public class ReversiView extends SurfaceView {
         super(context, attrs, defStyle);
         this.preInitBoard();
         this.initialize();
-    }
-
-    /**
-     * Occurs when drawing the board
-     * 
-     * @param canvas
-     */
-    @Override
-    public void onDraw(final Canvas canvas) {
-        this.setBackgroundColor(Color.RED);
     }
 
     private void drawGrid(final Canvas canvas) {
@@ -91,7 +82,8 @@ public class ReversiView extends SurfaceView {
 
     }
 
-    private void calculateGraphicParameters(final Canvas canvas, final int width, final int height) {
+    private void calculateGraphicParameters(final Canvas canvas, final int width,
+            final int height) {
         canvasWidth = width;
         canvasHeight = height;
 
@@ -126,7 +118,7 @@ public class ReversiView extends SurfaceView {
                 updateBoard(Player.PLAYER2, (short)3, (short)4);
 
                 //AllowedMovements for Player
-                listAllowedMovements = allowedMovements(currentPlayer);
+                listAllowedMovements = allowedMovements(currentPlayer, gameBoard);
 
                 //UpdateBoard with suggestions
                 for (final Movement movement : listAllowedMovements) {
@@ -163,13 +155,12 @@ public class ReversiView extends SurfaceView {
         if (this.isEnableUserTouch) {
             final short column = transformCoordinateXInColumn(event.getX());
             final short row = transformCoordinateYInRow(event.getY());
+
             if (row != -1 && column != -1 ) {
                 if (this.isAllowedMovement(new Movement(row, column))) {
+                    removeSuggestionsFromBoard(gameBoard, listAllowedMovements);
                     updateBoard(this.currentPlayer, column, row);
-                    final Canvas canvas = getHolder().lockCanvas();
-                    drawGrid(canvas);
-                    drawPositions(canvas);
-                    getHolder().unlockCanvasAndPost(canvas);
+                    this.mainLoop();
                 }
             }
         }
@@ -201,13 +192,14 @@ public class ReversiView extends SurfaceView {
         return column;
     }
 
-    private void drawDisk(final Canvas canvas, final Square square, final short column, final short row) {
+    private void drawDisk(final Canvas canvas, final Square square, final short column,
+            final short row) {
         this.drawCircle(canvas, square.getPlayer(), square.getSquareMediumX(),
                 square.getSquareMediumY(), square.getRadius(), square.isSuggestion());
     }
 
-    private void drawCircle(final Canvas canvas, final Player player, final int cx, final int cy, final int radius,
-            final boolean isSuggestion) {
+    private void drawCircle(final Canvas canvas, final Player player, final int cx,
+            final int cy, final int radius, final boolean isSuggestion) {
 
         final Paint paint = new Paint();
 
@@ -216,19 +208,27 @@ public class ReversiView extends SurfaceView {
 
         switch (player){
             case PLAYER1:
+                //border color
+                paint.setColor(Color.BLACK);
+                canvas.drawCircle(cx, cy, radius, paint);
+                //inside color
                 if (isSuggestion) {
-                    paint.setColor(Color.BLUE);
+                    paint.setColor(Color.GRAY);
                 }else {
                     paint.setColor(player.getColor());
                 }
-                canvas.drawCircle(cx, cy, radius, paint);
+                canvas.drawCircle(cx, cy, radius-2, paint);
                 break;
             case PLAYER2:
                 //border color
                 paint.setColor(Color.BLACK);
                 canvas.drawCircle(cx, cy, radius, paint);
                 //inside color
-                paint.setColor(player.getColor());
+                if (isSuggestion) {
+                    paint.setColor(Color.BLUE);
+                } else {
+                    paint.setColor(player.getColor());
+                }
                 canvas.drawCircle(cx, cy, radius-2, paint);
                 break;
             default:
@@ -240,7 +240,8 @@ public class ReversiView extends SurfaceView {
         this.updateBoard(player, column, row, false);
     }
 
-    private void updateBoard(final Player player, final short column, final short row, final boolean suggestion) {
+    private void updateBoard(final Player player, final short column, final short row,
+            final boolean suggestion) {
         this.gameBoard[column][row].setPlayer(player);
         this.gameBoard[column][row].setSuggestion(suggestion);
     }
@@ -268,8 +269,10 @@ public class ReversiView extends SurfaceView {
             for (short row = 0; row < NUMBER_OF_ROWS; row++) {
 
                 // calculating the square's center
-                final int cellMediumX = (column * this.squareWidth + (column + 1) * this.squareWidth) / 2;
-                final int cellMediumY = (row * this.squareHeight + (row + 1) * this.squareHeight) / 2;
+                final int cellMediumX = (column * this.squareWidth + (column + 1) *
+                        this.squareWidth) / 2;
+                final int cellMediumY = (row * this.squareHeight + (row + 1) *
+                        this.squareHeight) / 2;
 
                 // applying the margins
                 final int cx = cellMediumX + LEFT_MARGIN;
@@ -286,18 +289,19 @@ public class ReversiView extends SurfaceView {
         }
     }
 
-    private void first() {
-        if (this.currentPlayer == Player.PLAYER1) {
+    private void mainLoop() {
+        this.currentPlayer = opponent(this.currentPlayer);
+
+        if (this.currentPlayer != this.IA) {
             //AllowedMovements for Player
-            final List<Movement> list = allowedMovements(this.currentPlayer);
+            listAllowedMovements = allowedMovements(currentPlayer, gameBoard);
 
             //UpdateBoard with suggestions
-            for (final Movement movement : list) {
-                updateBoard(this.currentPlayer, movement.getColumn(), movement.getRow(), true);
+            for (final Movement movement : listAllowedMovements) {
+                updateBoard(currentPlayer, movement.getColumn(), movement.getRow(), true);
             }
 
 
-            //Draw board
             final Canvas canvas = getHolder().lockCanvas();
             drawGrid(canvas);
             drawPositions(canvas);
@@ -306,12 +310,12 @@ public class ReversiView extends SurfaceView {
             this.isEnableUserTouch = true;
         }
         else {
-            //The IA is always PLAYER2 ?
-            //Launch IA Thread.
+            this.isEnableUserTouch = false;
+            //Launch IA thread.
         }
     }
 
-    private List<Movement> allowedMovements(final Player player) {
+    private List<Movement> allowedMovements(final Player player, final Square gameBoard[][]) {
         final List<Movement> list = new ArrayList<Movement>();
 
         for (short column = 0; column < NUMBER_OF_COLUMNS; column++) {
@@ -329,12 +333,31 @@ public class ReversiView extends SurfaceView {
     }
 
     private boolean isAllowedMovement(final Movement movement) {
-        //Seguir las recomendaciones y crear un toString, comparador y lo que sea para cada objeto :(
         for (final Movement iterator : listAllowedMovements) {
-            if ((iterator.getColumn() == movement.getColumn()) && (iterator.getRow() == movement.getRow())) {
+            if (iterator.equals(movement)) {
                 return true;
             }
         }
+
         return false;
+    }
+
+    private void removeSuggestionsFromBoard(final Square gameBoard[][],
+            final List<Movement> listAllowedMovements) {
+
+        for (final Movement iterator : listAllowedMovements) {
+            updateBoard(Player.NOPLAYER, iterator.getColumn(), iterator.getRow());
+        }
+    }
+
+    private Player opponent(Player currentPlayer) {
+        switch (currentPlayer){
+            case PLAYER1:
+                return Player.PLAYER2;
+            case PLAYER2:
+                return Player.PLAYER1;
+            default:
+                return Player.NOPLAYER;
+        }
     }
 }
