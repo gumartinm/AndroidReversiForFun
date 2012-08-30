@@ -204,14 +204,14 @@ public class ReversiView extends SurfaceView {
     }
 
     private void drawCircle(Canvas canvas, Player player, int cx, int cy, int radius,
-            boolean isSolid) {
+            boolean alphaChannel) {
 
         Paint paint = new Paint();
 
         paint.setAntiAlias(true);
 
-        //If not solid it is a suggestion.
-        if (!isSolid) {
+        //Set alpha channel when drawing suggestion discs.
+        if (alphaChannel) {
             paint.setAlpha(77);
         }
 
@@ -219,6 +219,9 @@ public class ReversiView extends SurfaceView {
             case PLAYER1:
                 paint.setColor(player.getColor());
                 //paint.setAntiAlias(true);
+                if (alphaChannel) {
+                    paint.setColor(Color.BLUE);
+                }
                 canvas.drawCircle(cx, cy, radius, paint);
                 break;
             case PLAYER2:
