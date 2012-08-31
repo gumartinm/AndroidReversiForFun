@@ -3,6 +3,7 @@ package de.android.reversi;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -11,6 +12,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.widget.TextView;
 
 
 public class ReversiView extends SurfaceView {
@@ -22,6 +24,7 @@ public class ReversiView extends SurfaceView {
 
     private final Square gameBoard[][] = new Square[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
     private final Player IA = Player.NOPLAYER;
+    private final Context context;
 
     //¿Funciona bien volatile con enum? Ver mi codigo de Singletons y enums.
     private volatile Player currentPlayer = Player.PLAYER1;
@@ -36,18 +39,21 @@ public class ReversiView extends SurfaceView {
 
     public ReversiView(final Context context) {
         super(context);
+        this.context = context;
         this.preInitBoard();
         this.initialize();
     }
 
     public ReversiView(final Context context, final AttributeSet attrs) {
         super(context, attrs);
+        this.context = context;
         this.preInitBoard();
         this.initialize();
     }
 
     public ReversiView(final Context context, final AttributeSet attrs, final int defStyle) {
         super(context, attrs, defStyle);
+        this.context = context;
         this.preInitBoard();
         this.initialize();
     }
@@ -249,13 +255,27 @@ public class ReversiView extends SurfaceView {
     }
 
     private void drawPositions(final Canvas canvas) {
+        int player1Score = 0;
+        int player2Score = 0;
+
         for (short column = 0; column < NUMBER_OF_COLUMNS; column++) {
             for (short row = 0; row < NUMBER_OF_ROWS; row++) {
                 if (this.gameBoard[column][row].getPlayer() != Player.NOPLAYER) {
+                    if (this.gameBoard[column][row].getPlayer() == Player.PLAYER1 &&
+                            !this.gameBoard[column][row].isSuggestion() ) {
+                        player1Score++;
+                    }
+                    if (this.gameBoard[column][row].getPlayer() == Player.PLAYER2 &&
+                            !this.gameBoard[column][row].isSuggestion() ) {
+                        player2Score++;
+                    }
                     drawDisk(canvas, this.gameBoard[column][row], column, row);
                 }
             }
         }
+
+        ((TextView)((Activity)this.context).findViewById(R.id.txtPlayer1Score)).setText(String.format(" %d %s", player1Score, "discs"));
+        ((TextView)((Activity)this.context).findViewById(R.id.txtPlayer2Score)).setText(String.format(" %d %s", player2Score, "discs"));
     }
 
     private void preInitBoard() {

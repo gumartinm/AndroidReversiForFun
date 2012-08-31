@@ -16,7 +16,7 @@
             android:layout_width="wrap_content" 
             android:layout_height="wrap_content"/>
         <TextView android:text=" 2" 
-            android:id="@+id/txtPlayer1Counter"
+            android:id="@+id/txtPlayer1Score"
             android:minWidth="30dp" 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">    
@@ -29,7 +29,7 @@
         </TextView>
         <TextView 
             android:text=" 2" 
-            android:id="@+id/txtPlayer2Counter"
+            android:id="@+id/txtPlayer2Score"
             android:minWidth="30dp" 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">

@@ -4,7 +4,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
     <string name="title_activity_reversi">ReversiActivity</string>
-    <string name="player1">Blue</string>
-    <string name="player2">Red</string>
-
+    <string name="player1">Black: </string>
+    <string name="player2">White: </string>
+    <string name="discs"> discs</string>
 </resources>
