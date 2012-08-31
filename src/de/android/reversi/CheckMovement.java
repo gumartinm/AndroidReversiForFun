@@ -6,22 +6,29 @@ import java.util.List;
 public final class CheckMovement {
     public static boolean horizontal(final Square gameBoard[][], final Movement movement,
             final Player player) {
-        return outflankRight(gameBoard, movement, player) ||
-                outflankLeft(gameBoard, movement, player);
+        final boolean outflankRight = outflankRight(gameBoard, movement, player);
+        final boolean outflankLeft = outflankLeft(gameBoard, movement, player);
+
+        return outflankRight || outflankLeft;
     }
 
     public static boolean vertical(final Square gameBoard[][], final Movement movement,
             final Player player) {
-        return outflankUp(gameBoard, movement, player) ||
-                outflankDown(gameBoard, movement, player);
+        final boolean outflankUp = outflankUp(gameBoard, movement, player);
+        final boolean outflankDown = outflankDown(gameBoard, movement, player);
+
+        return outflankUp || outflankDown;
     }
 
     public static boolean diagonal(final Square gameBoard[][], final Movement movement,
             final Player player) {
-        return outflankDiagonalLeftUp(gameBoard, movement, player) ||
-                outflankDiagonalRightDown(gameBoard, movement, player) ||
-                outflankDiagonalRightUp(gameBoard, movement, player) ||
-                outflankDiagonalLeftDown(gameBoard, movement, player);
+        final boolean outflankDiagonalLeftUp = outflankDiagonalLeftUp(gameBoard, movement, player);
+        final boolean outflankDiagonalRightDown = outflankDiagonalRightDown(gameBoard, movement, player);
+        final boolean outflankDiagonalRightUp = outflankDiagonalRightUp(gameBoard, movement, player);
+        final boolean outflankDiagonalLeftDown = outflankDiagonalLeftDown(gameBoard, movement, player);
+
+        return outflankDiagonalLeftUp || outflankDiagonalRightDown || outflankDiagonalRightUp ||
+                outflankDiagonalLeftDown;
     }
 
     public static boolean empty(final Square gameBoard[][], final short column, final short row) {

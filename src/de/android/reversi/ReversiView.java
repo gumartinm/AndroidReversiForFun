@@ -23,7 +23,7 @@ public class ReversiView extends SurfaceView {
     private static final short LEFT_MARGIN = 0;
 
     private final Square gameBoard[][] = new Square[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
-    private final Player IA = Player.NOPLAYER;
+    private final Player AI = Player.NOPLAYER;
     private final Context context;
 
     //¿Funciona bien volatile con enum? Ver mi codigo de Singletons y enums.
@@ -314,7 +314,7 @@ public class ReversiView extends SurfaceView {
     private void mainLoop() {
         this.currentPlayer = opponent(this.currentPlayer);
 
-        if (this.currentPlayer != this.IA) {
+        if (this.currentPlayer != this.AI) {
             //AllowedMovements for Player
             listAllowedMovements = allowedMovements(currentPlayer, gameBoard);
 
@@ -333,7 +333,7 @@ public class ReversiView extends SurfaceView {
         }
         else {
             this.isEnableUserTouch = false;
-            //Launch IA thread.
+            //Launch AI thread.
         }
     }
 
@@ -343,11 +343,14 @@ public class ReversiView extends SurfaceView {
         for (short column = 0; column < NUMBER_OF_COLUMNS; column++) {
             for (short row = 0; row < NUMBER_OF_ROWS; row++) {
                 final Movement movement = new Movement(row, column);
-                if (CheckMovement.empty(gameBoard, column, row) &&
-                        (CheckMovement.diagonal(gameBoard, movement, player) ||
-                                CheckMovement.horizontal(gameBoard, movement, player) ||
-                                CheckMovement.vertical(gameBoard, movement, player))) {
-                    list.add(movement);
+                if (CheckMovement.empty(gameBoard, column, row)) {
+                    final boolean diagonal = CheckMovement.diagonal(gameBoard, movement, player);
+                    final boolean horizontal = CheckMovement.horizontal(gameBoard, movement, player);
+                    final boolean vertical = CheckMovement.vertical(gameBoard, movement, player);
+
+                    if(diagonal || horizontal || vertical) {
+                        list.add(movement);
+                    }
                 }
             }
         }
