@@ -36,14 +36,8 @@ public final class CheckMovement {
         final short row = movement.getRow();
         final short column = movement.getColumn();
 
-        //Precondition 1.
+        //Precondition:
         if  (row <= 1) {
-            return false;
-        }
-
-        //Precondition 2.
-        if (gameBoard[column][row-1].getPlayer() == player ||
-                empty(gameBoard, column, (short)(row-1))) {
             return false;
         }
 
@@ -62,14 +56,8 @@ public final class CheckMovement {
         final short row = movement.getRow();
         final short column = movement.getColumn();
 
-        //Precondition 1:
+        //Precondition:
         if  (row >= ReversiView.NUMBER_OF_ROWS -2) {
-            return false;
-        }
-
-        //Precondition 2.
-        if (gameBoard[column][row+1].getPlayer() == player ||
-                empty(gameBoard, column, (short)(row+1))) {
             return false;
         }
 
@@ -88,14 +76,8 @@ public final class CheckMovement {
         final short row = movement.getRow();
         final short column = movement.getColumn();
 
-        //Precondition 1:
+        //Precondition:
         if  (column >= ReversiView.NUMBER_OF_COLUMNS -2) {
-            return false;
-        }
-
-        //Precondition 2.
-        if (gameBoard[column+1][row].getPlayer() == player ||
-                empty(gameBoard, (short)(column+1), row)) {
             return false;
         }
 
@@ -114,14 +96,8 @@ public final class CheckMovement {
         final short row = movement.getRow();
         final short column = movement.getColumn();
 
-        //Precondition 1:
+        //Precondition:
         if  (column <= 1) {
-            return false;
-        }
-
-        //Precondition 2.
-        if (gameBoard[column-1][row].getPlayer() == player ||
-                empty(gameBoard, (short)(column-1), row)) {
             return false;
         }
 
@@ -140,14 +116,8 @@ public final class CheckMovement {
         final short row = movement.getRow();
         final short column = movement.getColumn();
 
-        //Precondition 1:
+        //Precondition:
         if  (column <= 1 || row <= 1) {
-            return false;
-        }
-
-        //Precondition 2.
-        if (gameBoard[column-1][row-1].getPlayer() == player ||
-                empty(gameBoard, (short)(column-1), (short)(row-1))) {
             return false;
         }
 
@@ -166,14 +136,8 @@ public final class CheckMovement {
         final short row = movement.getRow();
         final short column = movement.getColumn();
 
-        //Precondition 1:
+        //Precondition:
         if  (column >= (ReversiView.NUMBER_OF_COLUMNS -2) || row >= (ReversiView.NUMBER_OF_ROWS -2)) {
-            return false;
-        }
-
-        //Precondition 2.
-        if (gameBoard[column+1][row+1].getPlayer() == player ||
-                empty(gameBoard, (short)(column+1), (short)(row+1))) {
             return false;
         }
 
@@ -192,14 +156,8 @@ public final class CheckMovement {
         final short row = movement.getRow();
         final short column = movement.getColumn();
 
-        //Precondition 1:
+        //Precondition:
         if  (column <= 1 || row >= (ReversiView.NUMBER_OF_ROWS -2)) {
-            return false;
-        }
-
-        //Precondition 2.
-        if (gameBoard[column-1][row+1].getPlayer() == player ||
-                empty(gameBoard, (short)(column-1), (short)(row+1))) {
             return false;
         }
 
@@ -218,14 +176,8 @@ public final class CheckMovement {
         final short row = movement.getRow();
         final short column = movement.getColumn();
 
-        //Precondition 1:
+        //Precondition:
         if  (row <= 1 || column >= (ReversiView.NUMBER_OF_COLUMNS -2)) {
-            return false;
-        }
-
-        //Precondition 2.
-        if (gameBoard[column+1][row-1].getPlayer() == player ||
-                empty(gameBoard, (short)(column+1), (short)(row-1))) {
             return false;
         }
 
@@ -246,7 +198,7 @@ public final class CheckMovement {
 
         while (row > 0 && column > 0 &&
                 row < ReversiView.NUMBER_OF_ROWS && column < ReversiView.NUMBER_OF_COLUMNS &&
-                gameBoard[column][row].getPlayer() != Player.NOPLAYER) {
+                !empty(gameBoard, column, row)) {
 
             if (gameBoard[column][row].getPlayer() == player) {
                 match = true;
