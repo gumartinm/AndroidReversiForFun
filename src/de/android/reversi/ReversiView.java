@@ -111,11 +111,11 @@ public class ReversiView extends SurfaceView {
             @Override
             public void surfaceCreated(final SurfaceHolder holder) {
                 //White
-                updateBoard(Player.PLAYER1, (short)3, (short)3);
-                updateBoard(Player.PLAYER1, (short)4, (short)4);
+                updateBoard(Player.PLAYER1, (short)3, (short)4);
+                updateBoard(Player.PLAYER1, (short)4, (short)3);
                 //Black
-                updateBoard(Player.PLAYER2, (short)4, (short)3);
-                updateBoard(Player.PLAYER2, (short)3, (short)4);
+                updateBoard(Player.PLAYER2, (short)4, (short)4);
+                updateBoard(Player.PLAYER2, (short)3, (short)3);
 
                 //AllowedMovements for Player
                 listAllowedMovements = allowedMovements(currentPlayer, gameBoard);
@@ -157,9 +157,11 @@ public class ReversiView extends SurfaceView {
             final short row = transformCoordinateYInRow(event.getY());
 
             if (row != -1 && column != -1 ) {
-                if (this.isAllowedMovement(new Movement(row, column))) {
+                Movement movement;
+                if((movement = retrieveAllowedMovement(row, column)) != null) {
                     removeSuggestionsFromBoard(gameBoard, listAllowedMovements);
                     updateBoard(this.currentPlayer, column, row);
+                    flipOpponentDiscs(gameBoard, movement, currentPlayer);
                     this.mainLoop();
                 }
             }
@@ -320,11 +322,12 @@ public class ReversiView extends SurfaceView {
 
         for (short column = 0; column < NUMBER_OF_COLUMNS; column++) {
             for (short row = 0; row < NUMBER_OF_ROWS; row++) {
+                final Movement movement = new Movement(row, column);
                 if (CheckMovement.empty(gameBoard, column, row) &&
-                        (CheckMovement.diagonal(gameBoard, column, row, player) ||
-                                CheckMovement.horizontal(gameBoard, column, row, player) ||
-                                CheckMovement.vertical(gameBoard, column, row, player))) {
-                    list.add(new Movement(row, column));
+                        (CheckMovement.diagonal(gameBoard, movement, player) ||
+                                CheckMovement.horizontal(gameBoard, movement, player) ||
+                                CheckMovement.vertical(gameBoard, movement, player))) {
+                    list.add(movement);
                 }
             }
         }
@@ -332,14 +335,14 @@ public class ReversiView extends SurfaceView {
         return list;
     }
 
-    private boolean isAllowedMovement(final Movement movement) {
-        for (final Movement iterator : listAllowedMovements) {
-            if (iterator.equals(movement)) {
-                return true;
+    private Movement retrieveAllowedMovement(final short row, final short column) {
+        for (final Movement movement : listAllowedMovements) {
+            if ((movement.getRow() == row) && (movement.getColumn() == column)) {
+                return movement;
             }
         }
 
-        return false;
+        return null;
     }
 
     private void removeSuggestionsFromBoard(final Square gameBoard[][],
@@ -350,7 +353,7 @@ public class ReversiView extends SurfaceView {
         }
     }
 
-    private Player opponent(Player currentPlayer) {
+    private Player opponent(final Player currentPlayer) {
         switch (currentPlayer){
             case PLAYER1:
                 return Player.PLAYER2;
@@ -358,6 +361,12 @@ public class ReversiView extends SurfaceView {
                 return Player.PLAYER1;
             default:
                 return Player.NOPLAYER;
+        }
+    }
+
+    private void flipOpponentDiscs(final Square gameBoard[][], final Movement movement, final Player currentPlayer) {
+        for (final FlippedDisc flippedDisc : movement.getFlippedDiscs()) {
+            updateBoard(currentPlayer, flippedDisc.getColumn(), flippedDisc.getRow());
         }
     }
 }

@@ -1,10 +1,19 @@
 package de.android.reversi;
 
+import java.util.ArrayList;
+import java.util.List;
+
+
 public class Movement {
     private final short row;
     private final short column;
+    private final List<FlippedDisc> flippedDiscs = new ArrayList<FlippedDisc>();
 
-    public Movement(short row, short column) {
+    public List<FlippedDisc> getFlippedDiscs() {
+        return flippedDiscs;
+    }
+
+    public Movement(final short row, final short column) {
         this.row = row;
         this.column = column;
     }
@@ -15,35 +24,5 @@ public class Movement {
 
     public short getColumn() {
         return column;
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + column;
-        result = prime * result + row;
-        return result;
-    }
-
-    @Override
-    public boolean equals(final Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof Movement)) {
-            return false;
-        }
-        Movement other = (Movement) obj;
-        if (column != other.column) {
-            return false;
-        }
-        if (row != other.row) {
-            return false;
-        }
-        return true;
     }
 }
