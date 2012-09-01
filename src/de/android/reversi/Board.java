@@ -34,15 +34,14 @@ public class Board {
         gameBoard[column][row].setSuggestion(suggestion);
     }
 
-    public void removeSuggestionsFromBoard(final List<Movement> listAllowedMovements) {
-
-        for (final Movement iterator : listAllowedMovements) {
-            this.updateBoard(Player.NOPLAYER, iterator.getColumn(), iterator.getRow());
+    public void removeSuggestionsFromBoard(final List<Movement> list) {
+        for (final Movement movement : list) {
+            this.updateBoard(Player.NOPLAYER, movement.getColumn(), movement.getRow());
         }
     }
 
 
-    public void flipOpponentDiscs(final Square gameBoard[][], final Movement movement, final Player currentPlayer) {
+    public void flipOpponentDiscs(final Movement movement, final Player currentPlayer) {
         for (final FlippedDisc flippedDisc : movement.getFlippedDiscs()) {
             this.updateBoard(currentPlayer, flippedDisc.getColumn(), flippedDisc.getRow());
         }

@@ -9,9 +9,9 @@ import de.android.reversi.Movement;
 import de.android.reversi.Player;
 import de.android.reversi.Square;
 
-public class ReversiLogic {
+public final class ReversiLogic {
 
-    public List<Movement> allowedMovements(final Player player, final Square gameBoard[][]) {
+    public static List<Movement> allowedMovements(final Player player, final Square gameBoard[][]) {
         final List<Movement> list = new ArrayList<Movement>();
 
         for (short column = 0; column < Board.NUMBER_OF_COLUMNS; column++) {
@@ -32,7 +32,7 @@ public class ReversiLogic {
         return list;
     }
 
-    public Movement retrieveAllowedMovement(final short row, final short column,
+    public static Movement retrieveAllowedMovement(final short row, final short column,
             final List<Movement> listAllowedMovements) {
         for (final Movement movement : listAllowedMovements) {
             if ((movement.getRow() == row) && (movement.getColumn() == column)) {
@@ -43,7 +43,7 @@ public class ReversiLogic {
         return null;
     }
 
-    public Player opponent(final Player currentPlayer) {
+    public static Player opponent(final Player currentPlayer) {
         switch (currentPlayer){
             case PLAYER1:
                 return Player.PLAYER2;

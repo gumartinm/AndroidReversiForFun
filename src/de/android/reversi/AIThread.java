@@ -1,20 +1,25 @@
 package de.android.reversi;
 
-import java.util.List;
+import android.util.Log;
 
 public class AIThread extends Thread {
-    private List<Movement> listAllowedMovements;
+    private static final String TAG = "AIThread";
     private final Board board;
     private final Player player;
 
 
-    public AIThread(final Board board, final Player player, final String nameThread) {
-        super(nameThread);
+    public AIThread(final Board board, final Player player) {
+        super("AI-Thread");
+        this.setUncaughtExceptionHandler(new UnExpectedException());
         this.board = board;
         this.player = player;
     }
 
-    public void setListAllowedMovements(final List<Movement> listAllowedMovements) {
-        this.listAllowedMovements = listAllowedMovements;
+    private class UnExpectedException implements UncaughtExceptionHandler {
+
+        @Override
+        public void uncaughtException(final Thread thread, final Throwable ex) {
+            Log.e(TAG, "Unexpected exception. Thread: " + thread.getName(), ex);
+        }
     }
 }

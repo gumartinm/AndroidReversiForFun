@@ -17,7 +17,6 @@ import de.android.reversi.logic.ReversiLogic;
 
 public class ReversiView extends SurfaceView {
     private final Board board = new Board();
-    private final ReversiLogic reversiLogic = new ReversiLogic();
     private final Player AI = Player.NOPLAYER;
 
     private final Context context;
@@ -94,7 +93,7 @@ public class ReversiView extends SurfaceView {
                 board.updateBoard(Player.PLAYER2, (short)3, (short)3);
 
                 //AllowedMovements for Player
-                listAllowedMovements = reversiLogic.allowedMovements(currentPlayer, board.getGameBoard());
+                listAllowedMovements = ReversiLogic.allowedMovements(currentPlayer, board.getGameBoard());
 
                 //UpdateBoard with suggestions
                 for (final Movement movement : listAllowedMovements) {
@@ -134,7 +133,7 @@ public class ReversiView extends SurfaceView {
 
             if (row != -1 && column != -1 ) {
                 Movement movement;
-                if((movement = reversiLogic.retrieveAllowedMovement(row, column,
+                if((movement = ReversiLogic.retrieveAllowedMovement(row, column,
                         listAllowedMovements)) != null) {
                     board.removeSuggestionsFromBoard(listAllowedMovements);
                     this.mainLoop(column, row, movement);
@@ -216,15 +215,15 @@ public class ReversiView extends SurfaceView {
     private void mainLoop(final short column, final short row, final Movement movement) {
 
         board.updateBoard(this.currentPlayer, column, row);
-        board.flipOpponentDiscs(board.getGameBoard(), movement, currentPlayer);
+        board.flipOpponentDiscs(movement, currentPlayer);
 
         //Switch player.
-        this.currentPlayer = reversiLogic.opponent(this.currentPlayer);
+        this.currentPlayer = ReversiLogic.opponent(this.currentPlayer);
 
 
         if (this.currentPlayer != this.AI) {
             //AllowedMovements for player.
-            listAllowedMovements = reversiLogic.allowedMovements(currentPlayer, board.getGameBoard());
+            listAllowedMovements = ReversiLogic.allowedMovements(currentPlayer, board.getGameBoard());
 
             //UpdateBoard with suggestions
             for (final Movement suggestedMovement : listAllowedMovements) {
@@ -243,8 +242,7 @@ public class ReversiView extends SurfaceView {
         }
         else {
 
-            final AIThread AI = new AIThread(board, currentPlayer, "AI-Thread");
-            AI.setListAllowedMovements(listAllowedMovements);
+            final AIThread AI = new AIThread(board, currentPlayer);
 
             this.isEnableUserTouch = false;
             AI.start();
