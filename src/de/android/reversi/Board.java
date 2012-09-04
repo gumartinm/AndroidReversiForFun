@@ -1,8 +1,12 @@
 package de.android.reversi;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Board {
+    private final static short [][] directions = { { 0, 1 }, { 1, 1 }, { 1, 0 }, { 1, -1 },
+        { 0, -1 }, { -1, -1 }, { -1, 0 }, { -1, -1 } };
+
     public static final short NUMBER_OF_COLUMNS = 8;
     public static final short NUMBER_OF_ROWS = 8;
     public static final short TOP_MARGIN = 0;
@@ -24,26 +28,28 @@ public class Board {
         }
     }
 
-    public void updateBoard(final Player player, final short column, final short row) {
-        this.updateBoard(player, column, row, false);
+    public void makeMove(final Player player, final short column, final short row) {
+        this.makeMove(player, column, row, false);
     }
 
-    public void updateBoard(final Player player, final short column, final short row,
+    public void makeMove(final Player player, final short column, final short row,
             final boolean suggestion) {
         gameBoard[column][row].setPlayer(player);
         gameBoard[column][row].setSuggestion(suggestion);
     }
 
-    public void removeSuggestionsFromBoard(final List<Movement> list) {
-        for (final Movement movement : list) {
-            this.updateBoard(Player.NOPLAYER, movement.getColumn(), movement.getRow());
+    public void removeSuggestionsFromBoard(final List<Position> list) {
+        for (final Position movement : list) {
+            this.makeMove(Player.NOPLAYER, movement.getColumn(), movement.getRow());
         }
     }
 
 
-    public void flipOpponentDiscs(final Movement movement, final Player currentPlayer) {
-        for (final FlippedDisc flippedDisc : movement.getFlippedDiscs()) {
-            this.updateBoard(currentPlayer, flippedDisc.getColumn(), flippedDisc.getRow());
+    public void flipOpponentDiscs(final Position movement, final Player currentPlayer) {
+        final List<Position> flippedDiscs = flippedDiscs(currentPlayer, movement.getRow(),
+                movement.getColumn());
+        for (final Position flippedDisc : flippedDiscs) {
+            this.makeMove(currentPlayer, flippedDisc.getColumn(), flippedDisc.getRow());
         }
     }
 
@@ -110,6 +116,107 @@ public class Board {
 
         canvasWidth = width;
         squareWidth = (width - Board.LEFT_MARGIN * 2) / Board.NUMBER_OF_COLUMNS;
+    }
+
+    public final boolean empty(final short column, final short row) {
+        if (gameBoard[column][row].getPlayer() == Player.NOPLAYER) {
+            return true;
+        }
+        return false;
+    }
+
+    public final boolean isValidMove (final Player player, final short row, final short column) {
+        for (int i = 0; i < directions.length; i++) {
+            if (isValidMove (directions[i][0], directions[i][1], player,
+                    (short)(row + directions[i][1]), (short)(column + directions[i][0])) > 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public final List<Position> flippedDiscs (final Player player, final short row, final short column) {
+        final List<Position> flippedDiscs = new ArrayList<Position>();
+        List<Position> aux;
+
+        for (int i = 0; i < directions.length; i++) {
+            aux = flippedDiscs (directions[i][0], directions[i][1], player,
+                    (short)(row + directions[i][1]), (short)(column + directions[i][0]));
+            if (!aux.isEmpty()) {
+                flippedDiscs.addAll(aux);
+            }
+        }
+
+        return flippedDiscs;
+    }
+
+    public final List<Position> allowedPositions(final Player player) {
+        final List<Position> list = new ArrayList<Position>();
+
+        for (short column = 0; column < Board.NUMBER_OF_COLUMNS; column++) {
+            for (short row = 0; row < Board.NUMBER_OF_ROWS; row++) {
+                if (empty(column, row)) {
+                    if (isValidMove(player, row, column)) {
+                        list.add(new Position(row, column));
+                    }
+                }
+            }
+        }
+
+        return list;
+    }
+
+    private final int isValidMove (final short moveX, final short moveY, final Player player,
+            short row, short column) {
+        int flippedDiscs = 0;
+        boolean match = false;
+
+        while (row >= 0 && column >= 0 &&
+                row < Board.NUMBER_OF_ROWS && column < Board.NUMBER_OF_COLUMNS &&
+                !empty(column, row)) {
+
+            if (gameBoard[column][row].getPlayer() == player) {
+                match = true;
+                break;
+            }
+
+            flippedDiscs++;
+            column = (short)(column + moveX);
+            row = (short)(row + moveY);
+        }
+
+        if (!match) {
+            flippedDiscs = 0;
+        }
+
+        return flippedDiscs;
+    }
+
+    private final List<Position> flippedDiscs(final short moveX, final short moveY,
+            final Player player, short row, short column) {
+        final List<Position> flippedDiscs = new ArrayList<Position>();
+        boolean match = false;
+
+        while (row > 0 && column > 0 &&
+                row < Board.NUMBER_OF_ROWS && column < Board.NUMBER_OF_COLUMNS &&
+                !empty(column, row)) {
+
+            if (gameBoard[column][row].getPlayer() == player) {
+                match = true;
+                break;
+            }
+
+            flippedDiscs.add(new Position(row, column));
+            column = (short)(column + moveX);
+            row = (short)(row + moveY);
+        }
+
+        if (!match) {
+            flippedDiscs.clear();
+        }
+
+        return flippedDiscs;
     }
 
 

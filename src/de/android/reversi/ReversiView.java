@@ -25,7 +25,7 @@ public class ReversiView extends SurfaceView {
     private volatile Player currentPlayer = Player.PLAYER1;
     private volatile boolean isEnableUserTouch;
 
-    private List<Movement> listAllowedMovements;
+    private List<Position> listAllowedPositions;
 
 
     public ReversiView(final Context context) {
@@ -86,18 +86,18 @@ public class ReversiView extends SurfaceView {
             @Override
             public void surfaceCreated(final SurfaceHolder holder) {
                 //White
-                board.updateBoard(Player.PLAYER1, (short)3, (short)4);
-                board.updateBoard(Player.PLAYER1, (short)4, (short)3);
+                board.makeMove(Player.PLAYER1, (short)3, (short)4);
+                board.makeMove(Player.PLAYER1, (short)4, (short)3);
                 //Black
-                board.updateBoard(Player.PLAYER2, (short)4, (short)4);
-                board.updateBoard(Player.PLAYER2, (short)3, (short)3);
+                board.makeMove(Player.PLAYER2, (short)4, (short)4);
+                board.makeMove(Player.PLAYER2, (short)3, (short)3);
 
-                //AllowedMovements for Player
-                listAllowedMovements = ReversiLogic.allowedMovements(currentPlayer, board.getGameBoard());
+                //AllowedPositions for Player
+                listAllowedPositions = board.allowedPositions(currentPlayer);
 
                 //UpdateBoard with suggestions
-                for (final Movement movement : listAllowedMovements) {
-                    board.updateBoard(currentPlayer, movement.getColumn(), movement.getRow(), true);
+                for (final Position movement : listAllowedPositions) {
+                    board.makeMove(currentPlayer, movement.getColumn(), movement.getRow(), true);
                 }
             }
 
@@ -132,10 +132,10 @@ public class ReversiView extends SurfaceView {
             final short row = board.transformCoordinateYInRow(event.getY());
 
             if (row != -1 && column != -1 ) {
-                Movement movement;
-                if((movement = ReversiLogic.retrieveAllowedMovement(row, column,
-                        listAllowedMovements)) != null) {
-                    board.removeSuggestionsFromBoard(listAllowedMovements);
+                Position movement;
+                if((movement = ReversiLogic.retrieveAllowedPosition(row, column,
+                        listAllowedPositions)) != null) {
+                    board.removeSuggestionsFromBoard(listAllowedPositions);
                     this.mainLoop(column, row, movement);
                 }
             }
@@ -212,9 +212,9 @@ public class ReversiView extends SurfaceView {
         ((TextView)((Activity)this.context).findViewById(R.id.txtPlayer2Score)).setText(String.format(" %d %s", player2Score, "discs"));
     }
 
-    private void mainLoop(final short column, final short row, final Movement movement) {
+    private void mainLoop(final short column, final short row, final Position movement) {
 
-        board.updateBoard(this.currentPlayer, column, row);
+        board.makeMove(this.currentPlayer, column, row);
         board.flipOpponentDiscs(movement, currentPlayer);
 
         //Switch player.
@@ -222,12 +222,12 @@ public class ReversiView extends SurfaceView {
 
 
         if (this.currentPlayer != this.AI) {
-            //AllowedMovements for player.
-            listAllowedMovements = ReversiLogic.allowedMovements(currentPlayer, board.getGameBoard());
+            //AllowedPositions for player.
+            listAllowedPositions = board.allowedPositions(currentPlayer);
 
             //UpdateBoard with suggestions
-            for (final Movement suggestedMovement : listAllowedMovements) {
-                board.updateBoard(currentPlayer, suggestedMovement.getColumn(), suggestedMovement.getRow(), true);
+            for (final Position suggestedPosition : listAllowedPositions) {
+                board.makeMove(currentPlayer, suggestedPosition.getColumn(), suggestedPosition.getRow(), true);
             }
 
 
