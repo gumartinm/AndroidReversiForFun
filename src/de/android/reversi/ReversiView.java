@@ -1,5 +1,6 @@
 package de.android.reversi;
 
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.List;
 
 import android.app.Activity;
@@ -7,7 +8,9 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.os.Handler;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -17,7 +20,9 @@ import de.android.reversi.logic.ReversiLogic;
 
 public class ReversiView extends SurfaceView {
     private final Board board = new Board();
-    private final Player AI = Player.NOPLAYER;
+    private final Player AI = Player.PLAYER1;
+    int player1Score;
+    int player2Score;
 
     private final Context context;
 
@@ -136,7 +141,7 @@ public class ReversiView extends SurfaceView {
                 if((movement = ReversiLogic.retrieveAllowedPosition(row, column,
                         listAllowedPositions)) != null) {
                     board.removeSuggestionsFromBoard(listAllowedPositions);
-                    this.mainLoop(column, row, movement);
+                    this.mainLoop(movement);
                 }
             }
         }
@@ -189,8 +194,8 @@ public class ReversiView extends SurfaceView {
     }
 
     private void drawPositions(final Canvas canvas) {
-        int player1Score = 0;
-        int player2Score = 0;
+        player1Score = 0;
+        player2Score = 0;
 
         for (short column = 0; column < Board.NUMBER_OF_COLUMNS; column++) {
             for (short row = 0; row < Board.NUMBER_OF_ROWS; row++) {
@@ -208,14 +213,29 @@ public class ReversiView extends SurfaceView {
             }
         }
 
-        ((TextView)((Activity)this.context).findViewById(R.id.txtPlayer1Score)).setText(String.format(" %d %s", player1Score, "discs"));
-        ((TextView)((Activity)this.context).findViewById(R.id.txtPlayer2Score)).setText(String.format(" %d %s", player2Score, "discs"));
+        //TODO Really? I must redesign all of this :(
+        final Handler updateUI = this.getHandler();
+        updateUI.post(new Runnable() {
+
+            @Override
+            public void run() {
+                ((TextView)((Activity)context).findViewById(R.id.txtPlayer1Score)).setText(String.format(" %d %s", player1Score, "discs"));
+                ((TextView)((Activity)context).findViewById(R.id.txtPlayer2Score)).setText(String.format(" %d %s", player2Score, "discs"));
+            }
+
+        });
+
     }
 
-    private void mainLoop(final short column, final short row, final Position movement) {
+    private void mainLoop(final Position position) {
 
-        board.makeMove(this.currentPlayer, column, row);
-        board.flipOpponentDiscs(movement, currentPlayer);
+        board.makeMove(this.currentPlayer, position.getColumn(), position.getRow());
+        board.flipOpponentDiscs(position, currentPlayer);
+
+        Canvas canvas = getHolder().lockCanvas();
+        drawGrid(canvas);
+        drawPositions(canvas);
+        getHolder().unlockCanvasAndPost(canvas);
 
         //Switch player.
         this.currentPlayer = ReversiLogic.opponent(this.currentPlayer);
@@ -235,7 +255,7 @@ public class ReversiView extends SurfaceView {
             }
 
 
-            final Canvas canvas = getHolder().lockCanvas();
+            canvas = getHolder().lockCanvas();
             drawGrid(canvas);
             drawPositions(canvas);
             getHolder().unlockCanvasAndPost(canvas);
@@ -248,10 +268,32 @@ public class ReversiView extends SurfaceView {
         }
         else {
 
-            final AIThread AI = new AIThread(board, currentPlayer);
+            final Thread AIThread = new Thread(new Runnable(){
 
+                @Override
+                public void run() {
+                    final AI ai = new AI(currentPlayer);
+
+                    mainLoop(ai.getBestMove(board));
+
+
+                }
+
+            }, "AI-Thread");
+
+            AIThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+
+                @Override
+                public void uncaughtException(final Thread thread, final Throwable ex) {
+                    Log.e("AIThread", "Unexpected exception. Thread: " + thread.getName(), ex);
+                }
+
+            });
             this.isEnableUserTouch = false;
-            AI.start();
+
+
+
+            AIThread.start();
         }
     }
 }

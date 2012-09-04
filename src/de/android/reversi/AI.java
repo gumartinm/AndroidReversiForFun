@@ -58,7 +58,7 @@ public class AI {
 
         List<Position> allowedPositions;
         if (depth == 0 || (allowedPositions = board.allowedPositions(player)).isEmpty()) {
-            return 10; //the heuristic value of node
+            return this.heuristic(board, player); //the heuristic value of node
         }
         if (max) {
             for (final Position child : allowedPositions) {
@@ -106,7 +106,7 @@ public class AI {
             final Board newBoard = board.clone();
             newBoard.makeMove(this.max, child.getColumn(), child.getRow());
             newBoard.flipOpponentDiscs(child, this.max);
-            final int val = this.minimaxAB(newBoard, child, depth, -10, 10, true);
+            final int val = this.minimaxAB(newBoard, child, depth, 0, 0, true);
             if (val > alpha) {
                 alpha = val;
                 bestMove = child;
@@ -114,5 +114,16 @@ public class AI {
         }
 
         return bestMove;
+    }
+
+
+    private int getMobilityForPlayer(final Board board, final Player player) {
+
+        return board.allowedPositions(player).size();
+
+    }
+
+    private int heuristic (final Board board, final Player player) {
+        return this.getMobilityForPlayer(board, player);
     }
 }
