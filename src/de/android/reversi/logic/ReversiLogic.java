@@ -18,6 +18,7 @@ public final class ReversiLogic {
         return null;
     }
 
+    //TODO: With a linked list this is not needed
     public static Player opponent(final Player currentPlayer) {
         switch (currentPlayer){
             case PLAYER1:

@@ -3,7 +3,7 @@ package de.android.reversi;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Board {
+public class Board implements Cloneable {
     private final static short [][] directions = { { 0, 1 }, { 1, 1 }, { 1, 0 }, { 1, -1 },
         { 0, -1 }, { -1, -1 }, { -1, 0 }, { -1, -1 } };
 
@@ -12,7 +12,8 @@ public class Board {
     public static final short TOP_MARGIN = 0;
     public static final short LEFT_MARGIN = 0;
 
-    private final Square gameBoard[][] = new Square[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
+    //TODO: I am using clone but it could be interesting to use a copy factory.
+    private Square gameBoard[][] = new Square[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
 
     //Just one dimension because it is a square.
     private int squareWidth;
@@ -45,9 +46,9 @@ public class Board {
     }
 
 
-    public void flipOpponentDiscs(final Position movement, final Player currentPlayer) {
-        final List<Position> flippedDiscs = flippedDiscs(currentPlayer, movement.getRow(),
-                movement.getColumn());
+    public void flipOpponentDiscs(final Position position, final Player currentPlayer) {
+        final List<Position> flippedDiscs = flippedDiscs(currentPlayer, position.getRow(),
+                position.getColumn());
         for (final Position flippedDisc : flippedDiscs) {
             this.makeMove(currentPlayer, flippedDisc.getColumn(), flippedDisc.getRow());
         }
@@ -118,38 +119,6 @@ public class Board {
         squareWidth = (width - Board.LEFT_MARGIN * 2) / Board.NUMBER_OF_COLUMNS;
     }
 
-    public final boolean empty(final short column, final short row) {
-        if (gameBoard[column][row].getPlayer() == Player.NOPLAYER) {
-            return true;
-        }
-        return false;
-    }
-
-    public final boolean isValidMove (final Player player, final short row, final short column) {
-        for (int i = 0; i < directions.length; i++) {
-            if (isValidMove (directions[i][0], directions[i][1], player,
-                    (short)(row + directions[i][1]), (short)(column + directions[i][0])) > 0) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public final List<Position> flippedDiscs (final Player player, final short row, final short column) {
-        final List<Position> flippedDiscs = new ArrayList<Position>();
-        List<Position> aux;
-
-        for (int i = 0; i < directions.length; i++) {
-            aux = flippedDiscs (directions[i][0], directions[i][1], player,
-                    (short)(row + directions[i][1]), (short)(column + directions[i][0]));
-            if (!aux.isEmpty()) {
-                flippedDiscs.addAll(aux);
-            }
-        }
-
-        return flippedDiscs;
-    }
 
     public final List<Position> allowedPositions(final Player player) {
         final List<Position> list = new ArrayList<Position>();
@@ -165,6 +134,39 @@ public class Board {
         }
 
         return list;
+    }
+
+    private final boolean empty(final short column, final short row) {
+        if (gameBoard[column][row].getPlayer() == Player.NOPLAYER) {
+            return true;
+        }
+        return false;
+    }
+
+    private final boolean isValidMove (final Player player, final short row, final short column) {
+        for (int i = 0; i < directions.length; i++) {
+            if (isValidMove (directions[i][0], directions[i][1], player,
+                    (short)(row + directions[i][1]), (short)(column + directions[i][0])) > 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private final List<Position> flippedDiscs (final Player player, final short row, final short column) {
+        final List<Position> flippedDiscs = new ArrayList<Position>();
+        List<Position> aux;
+
+        for (int i = 0; i < directions.length; i++) {
+            aux = flippedDiscs (directions[i][0], directions[i][1], player,
+                    (short)(row + directions[i][1]), (short)(column + directions[i][0]));
+            if (!aux.isEmpty()) {
+                flippedDiscs.addAll(aux);
+            }
+        }
+
+        return flippedDiscs;
     }
 
     private final int isValidMove (final short moveX, final short moveY, final Player player,
@@ -232,5 +234,22 @@ public class Board {
 
     public Square[][] getGameBoard() {
         return gameBoard;
+    }
+
+    @Override
+    public Board clone() {
+        try {
+            final Board result = (Board) super.clone();
+            //If this was not a matrix (a simple array) I could use gameBoard.clone();
+            result.gameBoard = new Square[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
+            for (short column = 0; column < NUMBER_OF_COLUMNS; column++) {
+                for (short row = 0; row < NUMBER_OF_ROWS; row++) {
+                    result.gameBoard[column][row] = gameBoard[column][row].clone();
+                }
+            }
+            return result;
+        } catch (final CloneNotSupportedException e) {
+            throw new AssertionError(e);
+        }
     }
 }

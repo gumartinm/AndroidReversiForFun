@@ -2,6 +2,7 @@ package de.android.reversi;
 
 import android.graphics.Color;
 
+//TODO: better a linked list
 public enum Player {
     NOPLAYER {
         @Override

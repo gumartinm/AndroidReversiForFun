@@ -225,6 +225,10 @@ public class ReversiView extends SurfaceView {
             //AllowedPositions for player.
             listAllowedPositions = board.allowedPositions(currentPlayer);
 
+            final AI prueba = new AI(this.currentPlayer);
+
+            prueba.getBestMove(board);
+
             //UpdateBoard with suggestions
             for (final Position suggestedPosition : listAllowedPositions) {
                 board.makeMove(currentPlayer, suggestedPosition.getColumn(), suggestedPosition.getRow(), true);
@@ -237,6 +241,8 @@ public class ReversiView extends SurfaceView {
             getHolder().unlockCanvasAndPost(canvas);
 
             this.isEnableUserTouch = true;
+
+
 
             //Going to wait for touch event from human player.
         }
