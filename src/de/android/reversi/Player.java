@@ -11,7 +11,7 @@ public enum Player {
         }
 
     },
-    //Human player?
+
     PLAYER1 {
         @Override
         public int color() {
@@ -19,7 +19,7 @@ public enum Player {
 
         }
     },
-    //IA?
+
     PLAYER2 {
         @Override
         int color() {

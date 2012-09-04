@@ -15,7 +15,7 @@
         android:theme="@style/AppTheme" >
         <activity
             android:name=".ReversiActivity"
-            android:label="@string/title_activity_reversi" 
+            android:label="@string/app_name" 
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

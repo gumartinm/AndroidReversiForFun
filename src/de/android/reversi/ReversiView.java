@@ -4,10 +4,15 @@ import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.List;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.os.Bundle;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -27,7 +32,7 @@ public class ReversiView extends SurfaceView {
     private final Context context;
 
     //¿Funciona bien volatile con enum? Ver mi codigo de Singletons y enums.
-    private volatile Player currentPlayer = Player.PLAYER1;
+    private volatile Player currentPlayer = AI;
     private volatile boolean isEnableUserTouch;
 
     private List<Position> listAllowedPositions;
@@ -90,19 +95,21 @@ public class ReversiView extends SurfaceView {
 
             @Override
             public void surfaceCreated(final SurfaceHolder holder) {
-                //White
+                //Black
                 board.makeMove(Player.PLAYER1, (short)3, (short)4);
                 board.makeMove(Player.PLAYER1, (short)4, (short)3);
-                //Black
+                //White
                 board.makeMove(Player.PLAYER2, (short)4, (short)4);
                 board.makeMove(Player.PLAYER2, (short)3, (short)3);
 
                 //AllowedPositions for Player
-                listAllowedPositions = board.allowedPositions(currentPlayer);
+                if (currentPlayer != AI) {
+                    listAllowedPositions = board.allowedPositions(currentPlayer);
 
-                //UpdateBoard with suggestions
-                for (final Position movement : listAllowedPositions) {
-                    board.makeMove(currentPlayer, movement.getColumn(), movement.getRow(), true);
+                    //UpdateBoard with suggestions
+                    for (final Position movement : listAllowedPositions) {
+                        board.makeMove(currentPlayer, movement.getColumn(), movement.getRow(), true);
+                    }
                 }
             }
 
@@ -115,7 +122,30 @@ public class ReversiView extends SurfaceView {
                 drawGrid(canvas);
                 drawPositions(canvas);
                 holder.unlockCanvasAndPost(canvas);
-                isEnableUserTouch = true;
+                final Thread AIThread = new Thread(new Runnable(){
+
+                    @Override
+                    public void run() {
+                        final AI ai = new AI(currentPlayer);
+
+                        mainLoop(ai.getBestMove(board));
+
+
+                    }
+
+                }, "AI-Thread");
+
+                AIThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+
+                    @Override
+                    public void uncaughtException(final Thread thread, final Throwable ex) {
+                        Log.e("AIThread", "Unexpected exception. Thread: " + thread.getName(), ex);
+                    }
+
+                });
+
+
+                AIThread.start();
             }
 
             @Override
@@ -245,9 +275,10 @@ public class ReversiView extends SurfaceView {
             //AllowedPositions for player.
             listAllowedPositions = board.allowedPositions(currentPlayer);
 
-            final AI prueba = new AI(this.currentPlayer);
-
-            prueba.getBestMove(board);
+            if (listAllowedPositions.isEmpty()) {
+                final DialogFragment newFragment = ErrorDialogFragment.newInstance(R.string.Iwin);
+                newFragment.show(((Activity)context).getFragmentManager(), "errorDialog");
+            }
 
             //UpdateBoard with suggestions
             for (final Position suggestedPosition : listAllowedPositions) {
@@ -273,10 +304,15 @@ public class ReversiView extends SurfaceView {
                 @Override
                 public void run() {
                     final AI ai = new AI(currentPlayer);
+                    final Position move = ai.getBestMove(board);
 
-                    mainLoop(ai.getBestMove(board));
-
-
+                    if (move != null) {
+                        mainLoop(ai.getBestMove(board));
+                    }
+                    else {
+                        final DialogFragment newFragment = ErrorDialogFragment.newInstance(R.string.AIwon);
+                        newFragment.show(((Activity)context).getFragmentManager(), "errorDialog");
+                    }
                 }
 
             }, "AI-Thread");
@@ -294,6 +330,34 @@ public class ReversiView extends SurfaceView {
 
 
             AIThread.start();
+        }
+    }
+
+    public static class ErrorDialogFragment extends DialogFragment {
+
+        public static ErrorDialogFragment newInstance(final int title) {
+            final ErrorDialogFragment frag = new ErrorDialogFragment();
+            final Bundle args = new Bundle();
+
+            args.putInt("title", title);
+            frag.setArguments(args);
+
+            return frag;
+        }
+
+        @Override
+        public Dialog onCreateDialog(final Bundle savedInstanceState) {
+            final int title = getArguments().getInt("title");
+
+            return new AlertDialog.Builder(getActivity())
+            .setIcon(android.R.drawable.ic_dialog_alert)
+            .setTitle(title)
+            .setPositiveButton("", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(final DialogInterface dialog, final int whichButton) {
+
+                }
+            }).create();
         }
     }
 }
