@@ -3,7 +3,7 @@
     <string name="app_name">Reversi</string>
     <string name="hello_world">Hello world!</string>
     <string name="player1WON">YOU LOST!</string>
-    <string name="player2WON">I WIN!</string>
+    <string name="player2WON">YOU WON!</string>
     <string name="menu_settings">Settings</string>
     <string name="title_activity_reversi">ReversiActivity</string>
     <string name="player1">Black: </string>
