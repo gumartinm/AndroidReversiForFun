@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Board implements Cloneable {
     private final static short [][] directions = { { 0, 1 }, { 1, 1 }, { 1, 0 }, { 1, -1 },
-        { 0, -1 }, { -1, -1 }, { -1, 0 }, { -1, -1 } };
+        { 0, -1 }, { -1, -1 }, { -1, 0 }, { -1, 1 } };
 
     public static final short NUMBER_OF_COLUMNS = 8;
     public static final short NUMBER_OF_ROWS = 8;
@@ -200,7 +200,7 @@ public class Board implements Cloneable {
         final List<Position> flippedDiscs = new ArrayList<Position>();
         boolean match = false;
 
-        while (row > 0 && column > 0 &&
+        while (row >= 0 && column >= 0 &&
                 row < Board.NUMBER_OF_ROWS && column < Board.NUMBER_OF_COLUMNS &&
                 !empty(column, row)) {
 
