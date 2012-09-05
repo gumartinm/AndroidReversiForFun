@@ -136,6 +136,19 @@ public class Board implements Cloneable {
         return list;
     }
 
+    public final boolean idFrontierDisc(final short column, final short row) {
+        for (int i = 0; i < directions.length; i++) {
+            final short x = (short)(directions[i][0] + column);
+            final short y = (short)(directions[i][1] + row);
+
+            if(y >= 0 && x >= 0 && y < Board.NUMBER_OF_ROWS &&
+                    x < Board.NUMBER_OF_COLUMNS && empty(x, y)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
     private final boolean empty(final short column, final short row) {
         if (gameBoard[column][row].getPlayer() == Player.NOPLAYER) {
             return true;

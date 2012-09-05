@@ -85,8 +85,14 @@ public class AI {
     }
 
     public Position getBestMove(final Board board) {
+        //Initial values always for alpha = Integer.MIN_VALUE
+        //Initial values always for beta = Integer.MAX_VALUE
+
         final List<Position> allowedPositions = board.allowedPositions(this.maxPlayer);
-        int alpha = 0 ;
+        //Just you must make sure the heuristic values are not going to be smallest than this.
+        int alpha = Integer.MIN_VALUE ;
+        //Just you must make sure the heuristic values are not going to be bigger than this.
+        final int beta = Integer.MAX_VALUE;
         Position bestMove = null;
 
         for (final Position child : allowedPositions) {
@@ -96,7 +102,7 @@ public class AI {
             final Board newBoard = board.clone();
             newBoard.makeMove(this.maxPlayer, child.getColumn(), child.getRow());
             newBoard.flipOpponentDiscs(child, this.maxPlayer);
-            final int val = this.minimaxAB(newBoard, child, depth -1, alpha, Integer.MAX_VALUE, ReversiLogic.opponent(this.maxPlayer));
+            final int val = this.minimaxAB(newBoard, child, depth -1, alpha, beta, ReversiLogic.opponent(this.maxPlayer));
             if (val > alpha) {
                 alpha = val;
                 bestMove = child;
@@ -116,16 +122,58 @@ public class AI {
      * @param player
      * @return
      */
-    private int getMobilityForPlayer(final Board board, final Player player) {
+    //es la mobilidad para el oponente.
+    //cuanto más baja sea la movilidad para el oponente este metodo devuelve un valor mas alto.
+    private int getMobilityForOpponent(final Board board, final Player player) {
         final int mobility = board.allowedPositions(player).size();
+
         if (mobility == 0) {
-            return Integer.MAX_VALUE - 1;
+            return 64;
         } else {
             return 64 / mobility;
         }
     }
 
     private int heuristic (final Board board, final Player player) {
-        return this.getMobilityForPlayer(board, player);
+        final int diskSquareTable = this.diskSquareTable(board, player);
+        final int mobility = this.getMobilityForOpponent(board, player);
+        final int frontierDiscs = this.frontierDiscs(board, player);
+
+        return ((diskSquareTable * 10) + (mobility * 5) + (frontierDiscs * 5));
+    }
+
+    //es la puntuacion para el oponente.
+    //cuanto más alta sea la puntuación para el oponente este metodo devuelve un valor mas bajo.
+    private int diskSquareTable(final Board board, final Player player) {
+        int total = 0;
+
+        for (short column = 0; column < Board.NUMBER_OF_COLUMNS; column++) {
+            for (short row = 0; row < Board.NUMBER_OF_ROWS; row++) {
+                if (board.getGameBoard()[column][row].getPlayer() == player) {
+                    //TODO change the disk square table depending on the state of the game
+                    //see: http://www.site-constructor.com/othello/Present/BoardLocationValue.html
+                    total += this.values[column][row];
+                }
+            }
+        }
+        return (300 - total);
+    }
+
+    //discos frontera para el oponente
+    //cuantos mas discos frontera tenga el oponente mejor.
+    private int frontierDiscs(final Board board, final Player player) {
+        int result = 0;
+
+        for (short column = 0; column < Board.NUMBER_OF_COLUMNS; column++) {
+            for (short row = 0; row < Board.NUMBER_OF_ROWS; row++) {
+                if (board.getGameBoard()[column][row].getPlayer() == player) {
+                    if (board.idFrontierDisc(column, row)) {
+                        result++;
+                    }
+                }
+            }
+        }
+
+        return result;
     }
 }
