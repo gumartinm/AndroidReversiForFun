@@ -128,8 +128,21 @@ public class ReversiView extends SurfaceView {
                     public void run() {
                         final AI ai = new AI(currentPlayer);
 
-                        mainLoop(ai.getBestMove(board));
+                        final Position move = ai.getBestMove(board);
 
+                        if (move != null) {
+                            mainLoop(move);
+                        }
+                        else {
+                            int idString;
+                            if (player1Score > player2Score) {
+                                idString = R.string.player1WON;
+                            } else {
+                                idString = R.string.player2WON;
+                            }
+                            final DialogFragment newFragment = ErrorDialogFragment.newInstance(idString);
+                            newFragment.show(((Activity)context).getFragmentManager(), "errorDialog");
+                        }
 
                     }
 
@@ -313,7 +326,7 @@ public class ReversiView extends SurfaceView {
                     final Position move = ai.getBestMove(board);
 
                     if (move != null) {
-                        mainLoop(ai.getBestMove(board));
+                        mainLoop(move);
                     }
                     else {
                         int idString;
