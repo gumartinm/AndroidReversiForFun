@@ -280,8 +280,10 @@ public class ReversiView extends SurfaceView {
         drawPositions(canvas);
         getHolder().unlockCanvasAndPost(canvas);
 
-        //Switch player.
-        this.currentPlayer = ReversiLogic.opponent(this.currentPlayer);
+        if (!board.allowedPositions(ReversiLogic.opponent(this.currentPlayer)).isEmpty()) {
+            //Switch player.
+            this.currentPlayer = ReversiLogic.opponent(this.currentPlayer);
+        }
 
 
         if (this.currentPlayer != this.AI) {

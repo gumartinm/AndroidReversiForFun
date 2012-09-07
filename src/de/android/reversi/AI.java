@@ -1,6 +1,8 @@
 package de.android.reversi;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 import de.android.reversi.logic.ReversiLogic;
 
@@ -44,6 +46,10 @@ public class AI {
         if (depth == 0 || allowedPositions.isEmpty()) {
             return this.heuristic(board, player); //the heuristic value of node
         }
+
+        //Selects a move from the set of legal moves. In a random way :)
+        Collections.shuffle(allowedPositions, new Random());
+
         if (player == maxPlayer) {
             for (final Position child : allowedPositions) {
                 //TODO: This clone sucks. I must re design this program. :( I should just need the array :(
@@ -95,6 +101,9 @@ public class AI {
         final int beta = Integer.MAX_VALUE;
         Position bestMove = null;
 
+        //Selects a move from the set of legal moves. In a random way :)
+        Collections.shuffle(allowedPositions, new Random());
+
         for (final Position child : allowedPositions) {
             //TODO: This clone sucks. I must re design this program. :( I should just need the array :(
             //What I need is an undo movement function. In that way I do not need to clone/copy the whole board :(
@@ -122,8 +131,8 @@ public class AI {
      * @param player
      * @return
      */
-    //es la mobilidad para el oponente.
-    //cuanto más baja sea la movilidad para el oponente este metodo devuelve un valor mas alto.
+    //es la mobilidad para el oponente. minimaxAB tiene oponente como PE así que aquí me llega justo lo que quiero, el oponente.
+    //cuanto más baja sea la movilidad para el oponente este metodo devuelve un valor mas alto. Mejor para el jugador actual.
     private int getMobilityForOpponent(final Board board, final Player player) {
         final int mobility = board.allowedPositions(player).size();
 
@@ -142,31 +151,37 @@ public class AI {
         return ((diskSquareTable * 10) + (mobility * 5) + (frontierDiscs * 5));
     }
 
-    //es la puntuacion para el oponente.
-    //cuanto más alta sea la puntuación para el oponente este metodo devuelve un valor mas bajo.
+    //es la puntuacion para el jugador actual.
+    //cuanto más alta sea la puntuación para el jugador actual este metodo devuelve un valor mas alto (mejor para él)
     private int diskSquareTable(final Board board, final Player player) {
+        //Hay que hacerlo porque minimaxAB tiene oponente como PE. Si quiero el jugador actual tengo que calcular el oponente
+        //del jugador que me ofrece minimaxAB
+        final Player opponent = ReversiLogic.opponent(player);
         int total = 0;
 
         for (short column = 0; column < Board.NUMBER_OF_COLUMNS; column++) {
             for (short row = 0; row < Board.NUMBER_OF_ROWS; row++) {
-                if (board.getGameBoard()[column][row].getPlayer() == player) {
+                if (board.getGameBoard()[column][row].getPlayer() == opponent) {
                     //TODO change the disk square table depending on the state of the game
                     //see: http://www.site-constructor.com/othello/Present/BoardLocationValue.html
                     total += this.values[column][row];
                 }
             }
         }
-        return (300 - total);
+        return total;
     }
 
-    //discos frontera para el oponente
-    //cuantos mas discos frontera tenga el oponente mejor.
+    //discos frontera para el jugador actual.
+    //cuantos mas discos frontera tenga el jugador actual peor para él.
     private int frontierDiscs(final Board board, final Player player) {
+        //Hay que hacerlo porque minimaxAB tiene oponente como PE. Si quiero el jugador actual tengo que calcular el oponente
+        //del jugador que me ofrece minimaxAB
+        final Player opponent = ReversiLogic.opponent(player);
         int result = 0;
 
         for (short column = 0; column < Board.NUMBER_OF_COLUMNS; column++) {
             for (short row = 0; row < Board.NUMBER_OF_ROWS; row++) {
-                if (board.getGameBoard()[column][row].getPlayer() == player) {
+                if (board.getGameBoard()[column][row].getPlayer() == opponent) {
                     if (board.idFrontierDisc(column, row)) {
                         result++;
                     }
@@ -174,6 +189,6 @@ public class AI {
             }
         }
 
-        return result;
+        return (64 - result);
     }
 }
